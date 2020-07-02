@@ -1,52 +1,31 @@
 //Se ejecuta el config antes que nada.
 require('./config/config.js');
 
+//______REQUIRES_________
 const express = require('express');
-const app = express();
+const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+//_______________________
+
+const app = express();
+
 
 // parse application/x-www-form-urlencoded <- Middlewares
-app.use(bodyParser.urlencoded({ extended: false }))
-
+//app-express sirve para parsear las paginas en formato JSON - Ver en postman
+app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
+
+app.use(require('./routes/usuario'));
 
 
-app.get('/usuario', function(req, res) {
-    res.json('get Usuario');
-});
+mongoose.connect(process.env.urlDB, { useNewUrlParser: true, useCreateIndex: true },
+    (err, res) => {
 
-app.post('/usuario', function(req, res) {
-    let body = req.body;
+        if (err) throw err;
+        console.log('Base de datos ONLINE');
 
-    if (body.nombre === undefined) {
-        res.status(400).json({
-            ok: false,
-            mensaje: 'El nombre es necesario'
-        });
-    } else {
-        res.json({
-            persona: body
-        });
-    }
-
-
-});
-
-//Actualizar
-//Id es parametro.
-app.put('/usuario/:id', function(req, res) {
-    let id = req.params.id;
-    res.json({
-        id
     });
-});
-
-//Borrar
-app.delete('/usuario', function(req, res) {
-    res.json('delete Usuario');
-});
-
 
 app.listen(process.env.PORT, () => {
     console.log('Escuchando puerto', process.env.PORT);
