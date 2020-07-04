@@ -1,38 +1,38 @@
-//Se ejecuta el config antes que nada.
-require('./config/config.js');
+require('./config/config');
 
-//______REQUIRES_________
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const path = require('path');
-//_______________________
-
 
 const app = express();
 
+const bodyParser = require('body-parser');
 
-// parse application/x-www-form-urlencoded <- Middlewares
-//app-express sirve para parsear las paginas en formato JSON - Ver en postman
-app.use(bodyParser.urlencoded({ extended: false }));
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
 // parse application/json
 app.use(bodyParser.json());
 
-//Habilitar la carpeta public
-//El path.resolve arma por nosotros en base a lo que le mandemos como parametros
+// habilitar la carpeta public
 app.use(express.static(path.resolve(__dirname, '../public')));
 
-//Configuracion global de las rutas
+
+// Configuración global de rutas
 app.use(require('./routes/index'));
 
-mongoose.connect(process.env.urlDB, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
-    (err, res) => {
 
-        if (err) throw err;
-        console.log('Base de datos ONLINE');
 
-    });
+mongoose.connect(process.env.URLDB, (err, res) => {
+
+    if (err) throw err;
+
+    console.log('Base de datos ONLINE');
+
+});
+
+
 
 app.listen(process.env.PORT, () => {
-    console.log('Escuchando puerto', process.env.PORT);
+    console.log('Escuchando puerto: ', process.env.PORT);
 });

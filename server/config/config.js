@@ -1,39 +1,43 @@
-//======================================
-//Puerto, si la aplicación no esta desplegado en producción usara el puerto local (3000)
-//======================================
+// ============================
+//  Puerto
+// ============================
 process.env.PORT = process.env.PORT || 3000;
 
-//======================================
-//ENTORNO
-//======================================
+
+// ============================
+//  Entorno
+// ============================
 process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 
-//======================================
-//Vencimiento del token
-//======================================
-//segundos:minutos:horas:dias
-process.env.CADUCIDAD_TOKEN = 60 * 60 * 24 * 30;
 
-//======================================
-//SEED de autenticación
-//======================================
-process.env.SEED = process.env.SEED || 'este-es-el-seed-desarrollo'
+// ============================
+//  Vencimiento del Token
+// ============================
+// 60 segundos
+// 60 minutos
+// 24 horas
+// 30 días
+process.env.CADUCIDAD_TOKEN = '48h';
 
 
-//======================================
-//BASE DE DATOS
-//======================================
+// ============================
+//  SEED de autenticación
+// ============================
+process.env.SEED = process.env.SEED || 'este-es-el-seed-desarrollo';
+
+// ============================
+//  Base de datos
+// ============================
 let urlDB;
 
 if (process.env.NODE_ENV === 'dev') {
     urlDB = 'mongodb://localhost:27017/cafe';
 } else {
     urlDB = process.env.MONGO_URI;
-};
-process.env.urlDB = urlDB;
+}
+process.env.URLDB = urlDB;
 
-
-//======================================
-//Google client ID
-//======================================
-process.env.CLIENT_ID = process.env.CLIENT_ID || '779428883870-c9u5qi9vejvhssugknig75c5ph16qsnk.apps.googleusercontent.com';
+// ============================
+//  Google Client ID
+// ============================
+process.env.CLIENT_ID = process.env.CLIENT_ID || '219758474264-vh1bibcphgvbc32km508lubtqkanikf1.apps.googleusercontent.com';

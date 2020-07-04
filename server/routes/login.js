@@ -1,22 +1,22 @@
 const express = require('express');
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
-const Usuario = require('../models/usuario');
-const e = require('express');
-const usuario = require('../models/usuario');
-const app = express();
 
+
+const Usuario = require('../models/usuario');
+
+const app = express();
 
 
 
 app.post('/login', (req, res) => {
 
-    //Obtencion del body 
-    let body = req.body; // <- Correo y password
+    let body = req.body;
 
     Usuario.findOne({ email: body.email }, (err, usuarioDB) => {
 
@@ -27,41 +27,42 @@ app.post('/login', (req, res) => {
             });
         }
 
-        //Si el usuario no existe en la base de datos
         if (!usuarioDB) {
             return res.status(400).json({
                 ok: false,
                 err: {
-                    message: ')Usuario( o contraseña incorrectos.'
+                    message: '(Usuario) o contraseña incorrectos'
                 }
             });
         }
 
-        //Valida si las contraseñas encriptadas son validas.
-        //Si no son iguales
+
         if (!bcrypt.compareSync(body.password, usuarioDB.password)) {
             return res.status(400).json({
                 ok: false,
                 err: {
-                    message: 'Usuario o )contraseña( incorrectos.'
+                    message: 'Usuario o (contraseña) incorrectos'
                 }
             });
         }
 
         let token = jwt.sign({
-            //Payload
             usuario: usuarioDB
-        }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN }); //segundos:minutos:horas:dias
+        }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
 
         res.json({
             ok: true,
             usuario: usuarioDB,
             token
         });
+
+
     });
+
 });
 
-//Configuraciones de google
+
+// Configuraciones de Google
 async function verify(token) {
     const ticket = await client.verifyIdToken({
         idToken: token,
@@ -70,51 +71,64 @@ async function verify(token) {
         //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
     const payload = ticket.getPayload();
+
     return {
         nombre: payload.name,
         email: payload.email,
         img: payload.picture,
         google: true
     }
+
 }
 
+
 app.post('/google', async(req, res) => {
+
     let token = req.body.idtoken;
+
     let googleUser = await verify(token)
-        .catch(err => {
+        .catch(e => {
             return res.status(403).json({
                 ok: false,
                 err: e
             });
         });
+
+
     Usuario.findOne({ email: googleUser.email }, (err, usuarioDB) => {
+
         if (err) {
             return res.status(500).json({
                 ok: false,
                 err
             });
-        }
+        };
 
         if (usuarioDB) {
-            //Si no se registro por google y quiere autenticarse por google es un error
+
             if (usuarioDB.google === false) {
                 return res.status(400).json({
-                    message: 'Debe de usar una autenticación normal'
+                    ok: false,
+                    err: {
+                        message: 'Debe de usar su autenticación normal'
+                    }
                 });
             } else {
                 let token = jwt.sign({
-                    //Payload
                     usuario: usuarioDB
-                }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN }); //segundos:minutos:horas:dias
+                }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+
 
                 return res.json({
                     ok: true,
                     usuario: usuarioDB,
-                    token
+                    token,
                 });
+
             }
+
         } else {
-            //Si el usuario no existe en nuestra base de datos seria un nuevo usuario.
+            // Si el usuario no existe en nuestra base de datos
             let usuario = new Usuario();
 
             usuario.nombre = googleUser.nombre;
@@ -124,26 +138,38 @@ app.post('/google', async(req, res) => {
             usuario.password = ':)';
 
             usuario.save((err, usuarioDB) => {
+
                 if (err) {
                     return res.status(500).json({
                         ok: false,
                         err
                     });
-                }
+                };
 
                 let token = jwt.sign({
-                    //Payload
                     usuario: usuarioDB
-                }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN }); //segundos:minutos:horas:dias
+                }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+
 
                 return res.json({
                     ok: true,
                     usuario: usuarioDB,
-                    token
+                    token,
                 });
+
+
             });
+
         }
+
+
     });
+
+
 });
+
+
+
+
 
 module.exports = app;
